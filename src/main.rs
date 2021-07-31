@@ -52,13 +52,14 @@ struct Opt {
     datatype: DataType,
 }
 
-fn convert(num: BigDecimal, typ: DataType) {
-    let s = match typ {
-        DataType::Float32 => num.to_f32().unwrap().to_string(),
-        DataType::Float64 => num.to_f64().unwrap().to_string(),
+fn to_bytes(num: BigDecimal, typ: DataType) -> Box<[u8]> {
+    match typ {
+        DataType::Float32 =>
+            Box::new(num.to_f32().unwrap().to_le_bytes()),
+        DataType::Float64 =>
+            Box::new(num.to_f64().unwrap().to_le_bytes()),
         DataType::Fixed(_, _, _) => panic!("unimplemented"),
-    };
-    println!("{}", s);
+    }
 }
 
 fn main() -> io::Result<()> {
@@ -70,7 +71,13 @@ fn main() -> io::Result<()> {
         let numstr = line.trim();
         let num = BigDecimal::from_decimal_str(numstr)
             .expect("could not parse number");
-        convert(num, opt.datatype);
+        let bytes = to_bytes(num, opt.datatype);
+
+        // Dump the binary data as hex. Eventually we should make the output
+        // format configurable, I guess.
+        for byte in bytes.iter() {
+            print!("{:x}", byte);
+        }
     }
 
     Ok(())
