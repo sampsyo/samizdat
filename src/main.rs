@@ -9,7 +9,7 @@ use fraction::{BigDecimal, ToPrimitive};
 enum DataType {
     Float32,
     Float64,
-    Fixed(usize, usize),
+    Fixed(bool, usize, usize),
 }
 
 #[derive(Debug, Clone)]
@@ -34,7 +34,8 @@ impl ToString for DataType {
         match self {
             DataType::Float32 => "f32".to_string(),
             DataType::Float64 => "f64".to_string(),
-            DataType::Fixed(i, f) => format!("s{}.{}", i, f),
+            DataType::Fixed(s, i, f) =>
+                format!("{}{}.{}", if *s { "s" } else { "u" }, i, f),
         }
     }
 }
@@ -55,7 +56,7 @@ fn convert(num: BigDecimal, typ: DataType) {
     let s = match typ {
         DataType::Float32 => num.to_f32().unwrap().to_string(),
         DataType::Float64 => num.to_f64().unwrap().to_string(),
-        DataType::Fixed(_, _) => panic!("unimplemented"),
+        DataType::Fixed(_, _, _) => panic!("unimplemented"),
     };
     println!("{}", s);
 }
