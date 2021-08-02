@@ -39,25 +39,37 @@ fn read_from_bytes<T: Read>(src: &mut T, typ: DataType) -> io::Result<BigDecimal
     }
 }
 
+fn read_from_text<T: BufRead>(src: &mut T) -> io::Result<Option<BigDecimal>> {
+    let mut buf = String::new();
+    Ok(if src.read_line(&mut buf)? != 0 {
+        Some(BigDecimal::from_decimal_str(buf.trim()).expect("could not parse number"))
+    } else {
+        None
+    })
+}
+
 fn main() -> io::Result<()> {
     let opt: Opt = argh::from_env();
 
     let stdin = io::stdin();
-    for line in stdin.lock().lines() {
-        let num =
-            BigDecimal::from_decimal_str(line.unwrap().trim()).expect("could not parse number");
-
-        match opt.to_format {
-            Format::Hex => {
-                // Dump the binary data as hex.
-                let bytes = to_bytes(num, opt.datatype);
-                for byte in bytes.iter() {
-                    print!("{:x}", byte);
+    let mut stdin_lock = stdin.lock();
+    loop {
+        match read_from_text(&mut stdin_lock)? {
+            Some(num) => {
+                match opt.to_format {
+                    Format::Hex => {
+                        // Dump the binary data as hex.
+                        let bytes = to_bytes(num, opt.datatype);
+                        for byte in bytes.iter() {
+                            print!("{:x}", byte);
+                        }
+                    },
+                    Format::Text => {
+                        println!("{}", num);
+                    },
                 }
             },
-            Format::Text => {
-                println!("{}", num);
-            },
+            None => break,
         }
     }
 
