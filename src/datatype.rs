@@ -30,7 +30,10 @@ impl ToString for DataType {
         match self {
             DataType::Float32 => "f32".to_string(),
             DataType::Float64 => "f64".to_string(),
-            DataType::Fixed(s, i, f) => format!("{}{}.{}", if *s { "s" } else { "u" }, i, f),
+            DataType::Fixed(s, i, f) => {
+                let sign = if *s { "s" } else { "u" };
+                format!("{}{}.{}", sign, i, f)
+            }
         }
     }
 }
