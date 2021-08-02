@@ -3,7 +3,7 @@ mod format;
 use datatype::DataType;
 use format::Format;
 use fraction::{BigDecimal, ToPrimitive};
-use std::io::{self, BufRead};
+use std::io::{self, Read, BufRead};
 use std::string::ToString;
 use argh::FromArgs;
 
@@ -27,6 +27,18 @@ fn to_bytes(num: BigDecimal, typ: DataType) -> Box<[u8]> {
     }
 }
 
+fn read_from_bytes<T: Read>(src: &mut T, typ: DataType) -> io::Result<BigDecimal> {
+    match typ {
+        DataType::Float32 => {
+            let mut buf = [0u8; 4];
+            src.read_exact(&mut buf)?;
+            Ok(f32::from_be_bytes(buf).into())
+        },
+        DataType::Float64 => todo!(),
+        DataType::Fixed(_, _, _) => panic!("fixed point unimplemented"),
+    }
+}
+
 fn main() -> io::Result<()> {
     let opt: Opt = argh::from_env();
 
@@ -34,11 +46,11 @@ fn main() -> io::Result<()> {
     for line in stdin.lock().lines() {
         let num =
             BigDecimal::from_decimal_str(line.unwrap().trim()).expect("could not parse number");
-        let bytes = to_bytes(num, opt.datatype);
 
         match opt.to_format {
             Format::Hex => {
                 // Dump the binary data as hex.
+                let bytes = to_bytes(num, opt.datatype);
                 for byte in bytes.iter() {
                     print!("{:x}", byte);
                 }
