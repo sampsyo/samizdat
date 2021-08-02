@@ -3,11 +3,13 @@ use datatype::DataType;
 use fraction::{BigDecimal, ToPrimitive};
 use std::io::{self, BufRead};
 use std::string::ToString;
-use structopt::StructOpt;
+use argh::FromArgs;
 
-#[derive(StructOpt, Debug)]
+#[derive(FromArgs, Debug)]
+/// Encode and decode numerical data.
 struct Opt {
-    #[structopt(short = "t", long = "type", default_value = "f32")]
+    /// numerical representation
+    #[argh(option, short = 't', long = "type", default = "DataType::Float32")]
     datatype: DataType,
 }
 
@@ -20,7 +22,7 @@ fn to_bytes(num: BigDecimal, typ: DataType) -> Box<[u8]> {
 }
 
 fn main() -> io::Result<()> {
-    let opt = Opt::from_args();
+    let opt: Opt = argh::from_env();
 
     let stdin = io::stdin();
     for line in stdin.lock().lines() {
