@@ -39,6 +39,20 @@ fn read_from_bytes<T: Read>(src: &mut T, typ: DataType) -> io::Result<BigDecimal
     }
 }
 
+fn read_from_hex<T: Read>(src: &mut T, typ: DataType) -> io::Result<BigDecimal> {
+    match typ {
+        DataType::Float32 => {
+            let mut enc_buf = [0u8; 8];
+            src.read_exact(&mut enc_buf)?;
+            let mut buf = [0u8; 4];
+            hex::decode_to_slice(enc_buf, &mut buf).expect("could not parse hex data");
+            Ok(f32::from_be_bytes(buf).into())
+        },
+        DataType::Float64 => todo!(),
+        DataType::Fixed(_, _, _) => panic!("fixed point unimplemented"),
+    }
+}
+
 fn read_from_text<T: BufRead>(src: &mut T) -> io::Result<Option<BigDecimal>> {
     let mut buf = String::new();
     Ok(if src.read_line(&mut buf)? != 0 {
