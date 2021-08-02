@@ -23,7 +23,7 @@ fn parse_precision(s: &str) -> Result<(usize, usize), ParseTypeError> {
     match s.find(".") {
         Some(dot) => {
             let (left, right) = s.split_at(dot);
-            Ok((left.parse()?, right.parse()?))
+            Ok((left.parse()?, right[1..].parse()?))
         },
         None => {
             Ok((s.parse()?, 0))
