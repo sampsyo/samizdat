@@ -56,7 +56,7 @@ fn main() -> io::Result<()> {
                 }
             },
             Format::Text => {
-                panic!("text output unimplemented");
+                println!("{}", num);
             },
         }
     }
