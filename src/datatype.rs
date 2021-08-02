@@ -1,14 +1,14 @@
 use std::fmt;
 use std::str::FromStr;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum DataType {
     Float32,
     Float64,
     Fixed(bool, usize, usize),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct ParseTypeError;
 
 impl From<std::num::ParseIntError> for ParseTypeError {
@@ -67,5 +67,20 @@ impl ToString for DataType {
 impl fmt::Display for ParseTypeError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "unknown data type")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::datatype::DataType;
+
+    #[test]
+    fn parse_types() {
+        assert_eq!("f32".parse(), Ok(DataType::Float32));
+        assert_eq!("f64".parse(), Ok(DataType::Float64));
+        assert_eq!("s4.2".parse(), Ok(DataType::Fixed(true, 4, 2)));
+        assert_eq!("u2.4".parse(), Ok(DataType::Fixed(false, 2, 4)));
+        assert_eq!("s42".parse(), Ok(DataType::Fixed(true, 42, 0)));
+        assert_eq!("u24".parse(), Ok(DataType::Fixed(false, 24, 0)));
     }
 }
