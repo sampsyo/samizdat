@@ -11,6 +11,26 @@ pub enum DataType {
 #[derive(Debug, Clone)]
 pub struct ParseTypeError;
 
+impl From<std::num::ParseIntError> for ParseTypeError {
+    fn from(_err: std::num::ParseIntError) -> ParseTypeError {
+        ParseTypeError
+    }
+}
+
+/// Parse precision specifications that look like "I.F", where I and F are the integer and
+/// fractional bits, or just "I", which is shorthand for "I.0".
+fn parse_precision(s: &str) -> Result<(usize, usize), ParseTypeError> {
+    match s.find(".") {
+        Some(dot) => {
+            let (left, right) = s.split_at(dot);
+            Ok((left.parse()?, right.parse()?))
+        },
+        None => {
+            Ok((s.parse()?, 0))
+        },
+    }
+}
+
 impl FromStr for DataType {
     type Err = ParseTypeError;
 
@@ -19,8 +39,14 @@ impl FromStr for DataType {
             Ok(DataType::Float32)
         } else if s == "f64" {
             Ok(DataType::Float64)
+        } else if s.starts_with("s") {
+            let (i, f) = parse_precision(&s[1..])?;
+            Ok(DataType::Fixed(true, i, f))
+        } else if s.starts_with("u") {
+            let (i, f) = parse_precision(&s[1..])?;
+            Ok(DataType::Fixed(false, i, f))
         } else {
-            panic!("unimplemented");
+            Err(ParseTypeError)
         }
     }
 }
