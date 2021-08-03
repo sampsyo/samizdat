@@ -1,0 +1,6 @@
+---
+source: src/lib.rs
+expression: "convert_string(\"1.23\", DataType::Float32, Format::Text, Format::Hex).unwrap()"
+
+---
+a4709d3f

@@ -4,7 +4,7 @@ pub mod format;
 use datatype::DataType;
 use format::Format;
 use fraction::{BigDecimal, ToPrimitive};
-use std::io::{self, Read, Write, BufRead};
+use std::io::{self, Read, Write, BufRead, BufReader};
 
 fn to_bytes(num: BigDecimal, typ: DataType) -> Box<[u8]> {
     match typ {
@@ -68,4 +68,23 @@ pub fn convert<I: BufRead, O: Write>(input: &mut I, output: &mut O, datatype: Da
     }
 
     Ok(())
+}
+
+pub fn convert_string(input: &str, datatype: DataType, from_format: Format, to_format: Format) -> io::Result<String> {
+    let mut inp = BufReader::new(input.as_bytes());
+    let mut out = Vec::<u8>::new();
+    convert(&mut inp, &mut out, datatype, from_format, to_format)?;
+    Ok(String::from_utf8(out).unwrap())
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::datatype::DataType;
+    use crate::format::Format;
+    use crate::convert_string;
+
+    #[test]
+    fn text_to_hex_f32() {
+        insta::assert_snapshot!(convert_string("1.23", DataType::Float32, Format::Text, Format::Hex).unwrap());
+    }
 }
