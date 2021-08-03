@@ -94,14 +94,14 @@ mod tests {
     use crate::datatype::DataType;
     use crate::format::Format;
 
+    fn round_trip_hex(text: &str, datatype: DataType) -> String {
+        let hex = convert_string(text, datatype, Format::Text, Format::Hex).unwrap();
+        convert_string(&hex, datatype, Format::Hex, Format::Text).unwrap()
+    }
+
     #[test]
     fn text_to_hex_f32() {
-        insta::assert_snapshot!(convert_string(
-            "1.23",
-            DataType::Float32,
-            Format::Text,
-            Format::Hex
-        )
-        .unwrap());
+        insta::assert_snapshot!(round_trip_hex("1.23", DataType::Float32), @"1.23
+");
     }
 }
