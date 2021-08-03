@@ -99,9 +99,16 @@ mod tests {
         convert_string(&hex, datatype, Format::Hex, Format::Text).unwrap()
     }
 
+    const NUMBERS: &str = r#"1.23
+        1.234567890123456789012345678901
+        -5"#;
+
     #[test]
     fn text_to_hex_f32() {
-        insta::assert_snapshot!(round_trip_hex("1.23", DataType::Float32), @"1.23
-");
+        insta::assert_snapshot!(round_trip_hex(NUMBERS, DataType::Float32), @r###"
+        1.23
+        1.2345679
+        -5
+        "###);
     }
 }
