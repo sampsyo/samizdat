@@ -1,8 +1,8 @@
+use argh::FromArgs;
 use samizdat::datatype::DataType;
 use samizdat::format::Format;
 use std::io;
 use std::string::ToString;
-use argh::FromArgs;
 
 #[derive(FromArgs, Debug)]
 /// Encode and decode numerical data.
@@ -22,5 +22,11 @@ struct Opt {
 
 fn main() -> io::Result<()> {
     let opt: Opt = argh::from_env();
-    samizdat::convert(&mut io::stdin().lock(), &mut io::stdout(), opt.datatype, opt.from_format, opt.to_format)
+    samizdat::convert(
+        &mut io::stdin().lock(),
+        &mut io::stdout(),
+        opt.datatype,
+        opt.from_format,
+        opt.to_format,
+    )
 }

@@ -24,10 +24,8 @@ fn parse_precision(s: &str) -> Result<(usize, usize), ParseTypeError> {
         Some(dot) => {
             let (left, right) = s.split_at(dot);
             Ok((left.parse()?, right[1..].parse()?))
-        },
-        None => {
-            Ok((s.parse()?, 0))
-        },
+        }
+        None => Ok((s.parse()?, 0)),
     }
 }
 
