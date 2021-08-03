@@ -80,7 +80,7 @@ pub fn convert<I: BufRead, O: Write>(
                         write!(output, "{}", hex::encode(bytes))?;
                     }
                     Format::Text => {
-                        write!(output, "{}\n", num)?;
+                        writeln!(output, "{}", num)?;
                     }
                 }
             }
@@ -131,7 +131,7 @@ mod tests {
     fn text_to_hex_f64() {
         insta::assert_snapshot!(round_trip_hex(NUMBERS, DataType::Float64), @r###"
         1.23
-        1.2345679
+        1.234567890123457
         -5
         "###);
     }

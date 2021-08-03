@@ -20,7 +20,7 @@ impl From<std::num::ParseIntError> for ParseTypeError {
 /// Parse precision specifications that look like "I.F", where I and F are the integer and
 /// fractional bits, or just "I", which is shorthand for "I.0".
 fn parse_precision(s: &str) -> Result<(usize, usize), ParseTypeError> {
-    match s.find(".") {
+    match s.find('.') {
         Some(dot) => {
             let (left, right) = s.split_at(dot);
             Ok((left.parse()?, right[1..].parse()?))
@@ -37,11 +37,11 @@ impl FromStr for DataType {
             Ok(DataType::Float32)
         } else if s == "f64" {
             Ok(DataType::Float64)
-        } else if s.starts_with("s") {
-            let (i, f) = parse_precision(&s[1..])?;
+        } else if let Some(p) = s.strip_prefix("s") {
+            let (i, f) = parse_precision(&p)?;
             Ok(DataType::Fixed(true, i, f))
-        } else if s.starts_with("u") {
-            let (i, f) = parse_precision(&s[1..])?;
+        } else if let Some(p) = s.strip_prefix("u") {
+            let (i, f) = parse_precision(&p)?;
             Ok(DataType::Fixed(false, i, f))
         } else {
             Err(ParseTypeError)
