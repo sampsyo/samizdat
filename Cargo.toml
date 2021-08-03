@@ -7,3 +7,6 @@ edition = "2018"
 argh = "0.1"
 fraction = "0.8"
 hex = "0.4"
+
+[dev-dependencies]
+insta = "1.7.0"
