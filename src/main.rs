@@ -31,18 +31,6 @@ fn to_bytes(num: BigDecimal, typ: DataType) -> Box<[u8]> {
     }
 }
 
-fn read_from_bytes<T: Read>(src: &mut T, typ: DataType) -> io::Result<BigDecimal> {
-    match typ {
-        DataType::Float32 => {
-            let mut buf = [0u8; 4];
-            src.read_exact(&mut buf)?;
-            Ok(f32::from_be_bytes(buf).into())
-        },
-        DataType::Float64 => todo!(),
-        DataType::Fixed(_, _, _) => panic!("fixed point unimplemented"),
-    }
-}
-
 fn read_from_hex<T: Read>(src: &mut T, typ: DataType) -> io::Result<Option<BigDecimal>> {
     match typ {
         DataType::Float32 => {
