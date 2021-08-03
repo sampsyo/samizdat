@@ -42,7 +42,7 @@ fn read_from_hex<T: Read>(src: &mut T, typ: DataType) -> io::Result<Option<BigDe
             }
             let mut buf = [0u8; 4];
             hex::decode_to_slice(enc_buf, &mut buf).expect("could not parse hex data");
-            Ok(Some(f32::from_be_bytes(buf).into()))
+            Ok(Some(f32::from_le_bytes(buf).into()))
         },
         DataType::Float64 => todo!(),
         DataType::Fixed(_, _, _) => panic!("fixed point unimplemented"),
@@ -77,9 +77,7 @@ fn main() -> io::Result<()> {
                     Format::Hex => {
                         // Dump the binary data as hex.
                         let bytes = to_bytes(num, opt.datatype);
-                        for byte in bytes.iter() {
-                            print!("{:x}", byte);
-                        }
+                        print!("{}", hex::encode(bytes));
                     },
                     Format::Text => {
                         println!("{}", num);
