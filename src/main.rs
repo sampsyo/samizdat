@@ -14,6 +14,10 @@ struct Opt {
     #[argh(option, short = 't', long = "type", default = "DataType::Float32")]
     datatype: DataType,
 
+    /// input file format
+    #[argh(option, long = "from", default = "Format::Text")]
+    from_format: Format,
+
     /// output file format
     #[argh(option, long = "to", default = "Format::Hex")]
     to_format: Format,
@@ -39,14 +43,18 @@ fn read_from_bytes<T: Read>(src: &mut T, typ: DataType) -> io::Result<BigDecimal
     }
 }
 
-fn read_from_hex<T: Read>(src: &mut T, typ: DataType) -> io::Result<BigDecimal> {
+fn read_from_hex<T: Read>(src: &mut T, typ: DataType) -> io::Result<Option<BigDecimal>> {
     match typ {
         DataType::Float32 => {
             let mut enc_buf = [0u8; 8];
-            src.read_exact(&mut enc_buf)?;
+            match src.read_exact(&mut enc_buf) {
+                Ok(()) => {},
+                Err(ref e) if e.kind() == io::ErrorKind::UnexpectedEof => return Ok(None),
+                Err(e) => return Err(e),
+            }
             let mut buf = [0u8; 4];
             hex::decode_to_slice(enc_buf, &mut buf).expect("could not parse hex data");
-            Ok(f32::from_be_bytes(buf).into())
+            Ok(Some(f32::from_be_bytes(buf).into()))
         },
         DataType::Float64 => todo!(),
         DataType::Fixed(_, _, _) => panic!("fixed point unimplemented"),
@@ -68,7 +76,14 @@ fn main() -> io::Result<()> {
     let stdin = io::stdin();
     let mut stdin_lock = stdin.lock();
     loop {
-        match read_from_text(&mut stdin_lock)? {
+        // Read.
+        let res = match opt.from_format {
+            Format::Text => read_from_text(&mut stdin_lock)?,
+            Format::Hex => read_from_hex(&mut stdin_lock, opt.datatype)?,
+        };
+
+        // Write.
+        match res {
             Some(num) => {
                 match opt.to_format {
                     Format::Hex => {
