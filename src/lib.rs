@@ -10,12 +10,16 @@ use std::io::{self, BufRead, BufReader, Read, Write};
 use std::str::FromStr;
 use std::convert::TryInto;
 
+// TODO: This should produce a bit vector, not merely just bytes.
 fn to_bytes(num: BigRational, typ: DataType) -> Box<[u8]> {
     match typ {
         DataType::Float32 => Box::new(num.to_f32().unwrap().to_le_bytes()),
         DataType::Float64 => Box::new(num.to_f64().unwrap().to_le_bytes()),
-        DataType::Fixed(_, _, _) => {
-            panic!("fixed point unimplemented");
+        DataType::Fixed(_signed, _ibits, fbits) => {
+            let int = (num * BigRational::from_u8(2).unwrap().pow(fbits.try_into().unwrap())).to_integer();  // round(num * 2^fbits)
+            // TODO set the sign bit
+            // TODO truncate according to total bits
+            int.to_bytes_le().1.into_boxed_slice()
         }
     }
 }
